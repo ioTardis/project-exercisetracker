@@ -67,7 +67,6 @@ app.post('/api/users/:_id/exercises', bodyParser.urlencoded({ extended: false })
     date = new Date(date);
   }
   date = date.toDateString();
-  console.log(date);
   
   let exercise = {
     description: req.body.description,
@@ -78,6 +77,21 @@ app.post('/api/users/:_id/exercises', bodyParser.urlencoded({ extended: false })
   models.USER.findByIdAndUpdate(id, { $push: { exercises: exercise }}, { new: true}, (err, savedExercise) => {
     if (!err) {
       res.json({ username: savedExercise.username, description: exercise.description, duration: exercise.duration, date: exercise.date, _id: savedExercise["_id"]});
+    } else console.log(err);
+  });
+});
+
+app.get('/api/users/:_id/logs', (req, res) => {
+  let id = req.params["_id"];
+  models.USER.findById(id, (err, userFound) => {
+    let log = {
+      username: userFound.username,
+      count: userFound.exercises.length,
+      _id: id,
+      log: userFound.exercises
+    }
+    if (!err) {
+      res.json(log);
     } else console.log(err);
   });
 });
