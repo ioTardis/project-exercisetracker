@@ -12,18 +12,6 @@ require('dotenv').config();
 // connection to the database
 mongoose.connect(process.env['MONGO_URI'], { useNewUrlParser: true, useUnifiedTopology: true});
 
-// // creating model
-// let userSchema = new mongoose.Schema({
-//   username: {
-//     type: String,
-//     required: true
-//   },
-//   description: String,
-//   duration: Number,
-//   date: String
-// });
-// let USER = mongoose.model('User', userSchema);
-
 app.use(cors());
 app.use(express.static('public'));
 app.get('/', (req, res) => {
@@ -73,22 +61,23 @@ app.post('/api/users/:_id/exercises', bodyParser.urlencoded({ extended: false })
   let id = req.params["_id"];
   let date = req.body.date;
   
-  if (date === '') {
+  if (typeof req.body.date === 'undefined' || req.body.date === '') {
     date = new Date();
   } else {
     date = new Date(date);
   }
   date = date.toDateString();
+  console.log(date);
   
   let exercise = {
     description: req.body.description,
-    duration: req.body.duration,
+    duration: Number(req.body.duration),
     date: date
   }
   
   models.USER.findByIdAndUpdate(id, { $push: { exercises: exercise }}, { new: true}, (err, savedExercise) => {
     if (!err) {
-      res.json(savedExercise);
+      res.json({ username: savedExercise.username, description: exercise.description, duration: exercise.duration, date: exercise.date, _id: savedExercise["_id"]});
     } else console.log(err);
   });
 });
