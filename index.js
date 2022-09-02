@@ -66,7 +66,6 @@ app.post('/api/users/:_id/exercises', bodyParser.urlencoded({ extended: false })
   } else {
     date = new Date(date);
   }
-  date = date.toDateString();
   
   let exercise = {
     description: req.body.description,
@@ -76,22 +75,47 @@ app.post('/api/users/:_id/exercises', bodyParser.urlencoded({ extended: false })
   
   models.USER.findByIdAndUpdate(id, { $push: { exercises: exercise }}, { new: true}, (err, savedExercise) => {
     if (!err) {
-      res.json({ username: savedExercise.username, description: exercise.description, duration: exercise.duration, date: exercise.date, _id: savedExercise["_id"]});
+      res.json({ username: savedExercise.username, description: exercise.description, duration: exercise.duration, date: exercise.date.toDateString(), _id: savedExercise["_id"]});
     } else console.log(err);
   });
 });
 
 app.get('/api/users/:_id/logs', (req, res) => {
   let id = req.params["_id"];
-  models.USER.findById(id, (err, userFound) => {
-    let log = {
-      username: userFound.username,
-      count: userFound.exercises.length,
-      _id: id,
-      log: userFound.exercises
-    }
+  let { fromDate, toDate, limit } = req.query;
+
+  models.USER.find({_id: id},(err, userFound) => {
     if (!err) {
-      res.json(log);
-    } else console.log(err);
+      let log = {}
+      let output = {
+      log: []
+    };
+    let filtered = [];
+      let exercises = userFound[0].exercises;
+      for (let i in exercises) {
+        let date = new Date(exercises[i].date);
+        log = {
+          description: exercises[i].description,
+          duration: exercises[i].duration,
+          date: date.toDateString()
+        }
+        if (
+          (typeof req.query.to === "undefined" && typeof req.query.from === "undefined") ||
+          (typeof req.query.to !== "undefined" &&
+            new Date(req.query.to) > date &&
+            typeof req.query.to === "undefined") ||
+          (typeof req.query.from !== "undefined" &&
+            new Date(req.query.from) < date &&
+            typeof req.query.to === "undefined") ||
+          (typeof req.query.from !== "undefined" &&
+            new Date(req.query.from) < date &&
+            typeof req.query.to !== "undefined" &&
+            new Date(req.query.to) > date)
+        ) filtered.push(log);
+      }
+      if (typeof limit !== "undefined") filtered = filtered.slice(0, req.query.limit);
+      output.log.push(filtered);
+      res.json({ username: userFound[0].username, count: userFound[0].exercises.length, _id: id, log: output.log[0]});
+    }
   });
 });
