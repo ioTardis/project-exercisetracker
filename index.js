@@ -1,6 +1,8 @@
 const express = require('express');
 const app = express();
 
+const cors = require('cors');
+
 const mongoose = require('mongoose');
 const models = require('./models');
 
@@ -12,6 +14,8 @@ mongoose.connect(process.env['MONGO_URI'], {
 	useNewUrlParser: true,
 	useUnifiedTopology: true
 });
+
+app.use(cors());
 
 // serving static file
 app.use(express.static('public'));
