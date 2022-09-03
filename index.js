@@ -1,8 +1,6 @@
 const express = require('express');
 const app = express();
 
-const cors = require('cors');
-
 const mongoose = require('mongoose');
 const models = require('./models');
 
@@ -14,8 +12,6 @@ mongoose.connect(process.env['MONGO_URI'], {
 	useNewUrlParser: true,
 	useUnifiedTopology: true
 });
-
-app.use(cors());
 
 // serving static file
 app.use(express.static('public'));
@@ -53,7 +49,7 @@ app.post('/api/users', bodyParser.urlencoded({ extended: false}),
     				username: username,
     				_id: id
     			});
-    		} else console.log(err);
+    		} else console.log('User not found');
   	  }
     );
   }
@@ -66,8 +62,7 @@ app.get('/api/users', (req, res) => {
 	.exec((err, usersArr) => {
 		if (!err) {
 			res.json(usersArr);
-		}
-		console.log(err);
+		} console.log('User not found');
 	});
 });
 
@@ -101,7 +96,7 @@ app.post('/api/users/:_id/exercises',
             _id: savedExercise['_id']
           }
           res.json(output);
-        } else console.log(err);
+        } else console.log('User not found');
       }
     );
   }
@@ -148,7 +143,7 @@ app.get('/api/users/:_id/logs', (req, res) => {
   				_id: id,
   				log: output.log[0]
   			});
-  		} else console.log(err);
+  		} else console.log('User not found');
 	  }
   );
 });
