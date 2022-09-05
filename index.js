@@ -38,7 +38,7 @@ const listener = app.listen(process.env.PORT || 3000, () => {
 });
 
 // receiving POST with username to save
-app.post('/api/users', bodyParser.urlencoded({ extended: false}),
+app.post('/api/users', bodyParser.urlencoded({ extended: false }),
   (req, res) => {
   	let username = req.body.username;
     
@@ -53,6 +53,7 @@ app.post('/api/users', bodyParser.urlencoded({ extended: false}),
     				username: username,
     				_id: id
     			});
+          return
     		} else console.log('User not found');
   	  }
     );
@@ -66,7 +67,7 @@ app.get('/api/users', (req, res) => {
 	.exec((err, usersArr) => {
 		if (!err) {
 			res.json(usersArr);
-		} console.log('User not found');
+		} console.log('Users not found');
 	});
 });
 
@@ -107,6 +108,10 @@ app.post('/api/users/:_id/exercises',
 );
 
 app.get('/api/users/:_id/logs', (req, res) => {
+  if (req.params['_id'].length !== 24) {
+    res.json({ error: 'invalid id. id contains 24 symbols' });
+    return
+  }
 	let id = req.params['_id'];
 	let {	fromDateDate, toDate, limit } = req.query;
 
